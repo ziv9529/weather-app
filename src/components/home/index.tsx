@@ -5,38 +5,47 @@ import TravelExploreIcon from '@mui/icons-material/TravelExplore';
 import { autofillData, currentWeatherResponse } from '../data';
 import WeatherCard from './weatherCard';
 import Autocomplete from '@mui/material/Autocomplete';
+import IconButton from '@mui/material/IconButton';
+import { getAutofillOptionsService } from '../../services/autofill';
 
 const Home = () => {
-    const [location, setLocation] = useState('Isparta');
-    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setLocation(event.target.value);
-    };
-    useEffect(() => {
+    const [inputLocation, setInputLocation] = useState<string>('');
+    const [autoFillData, setAutoFillData] = useState<string[]>([]);
+    const [location, setLocation] = useState<string | null>(autofillData[0]);
 
-    }, [location])
+    useEffect(() => {
+        const fetchAutofillData = async () => {
+            const data = await getAutofillOptionsService(inputLocation);
+            // setAutoFillData(data)
+        }
+        const result = fetchAutofillData().catch(console.error)
+    }, [inputLocation])
+
     return (
         <div>
             <h1>Home</h1>
             <div>
-                <TextField id="standard-basic" label="Standard" value={location} onChange={handleChange} variant="standard"
-                    InputProps={{
-                        startAdornment: (
-                            <InputAdornment position="start">
-                                <TravelExploreIcon />
-                            </InputAdornment>
-                        ),
-                    }}
-                />
                 <Autocomplete
-                    disablePortal
-                    id="combo-box-demo"
+                    value={location}
+                    onChange={(event: React.ChangeEvent<any>, newValue: string | null) => {
+                        setLocation(newValue);
+                    }}
+                    inputValue={inputLocation}
+                    onInputChange={(event: React.ChangeEvent<any>, newInputValue: string) => {
+                        setInputLocation(newInputValue);
+                    }}
+                    id="controllable-states-demo"
                     options={autofillData}
                     sx={{ width: 300 }}
-                    renderInput={(params) => <TextField {...params} label="Movie" />}
+                    renderInput={(params) => <TextField {...params} label="Select Location" />}
                 />
+                <IconButton disabled={!location}  >
+                    <TravelExploreIcon />
+                </IconButton>
+
 
             </div>
-            <WeatherCard location={location} />
+            {/* <WeatherCard location={location} /> */}
         </div>
     )
 }
