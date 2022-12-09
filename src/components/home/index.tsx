@@ -7,16 +7,16 @@ import WeatherCard from './weatherCard';
 import Autocomplete from '@mui/material/Autocomplete';
 import IconButton from '@mui/material/IconButton';
 import { getAutofillOptionsService } from '../../services/autofill';
-
+import { AutofillResults } from '../../services/autofill'
 const Home = () => {
     const [inputLocation, setInputLocation] = useState<string>('');
-    const [autoFillData, setAutoFillData] = useState<string[]>([]);
-    const [location, setLocation] = useState<string | null>(autofillData[0]);
-
+    const [autoFillOptions, setAutoFillOptions] = useState<AutofillResults[]>([]);
+    const [location, setLocation] = useState<AutofillResults | null>(autoFillOptions[0]);
+    
     useEffect(() => {
         const fetchAutofillData = async () => {
             const data = await getAutofillOptionsService(inputLocation);
-            // setAutoFillData(data)
+            setAutoFillOptions(data)
         }
         const result = fetchAutofillData().catch(console.error)
     }, [inputLocation])
@@ -27,7 +27,7 @@ const Home = () => {
             <div>
                 <Autocomplete
                     value={location}
-                    onChange={(event: React.ChangeEvent<any>, newValue: string | null) => {
+                    onChange={(event: React.ChangeEvent<any>, newValue: AutofillResults | null) => {
                         setLocation(newValue);
                     }}
                     inputValue={inputLocation}
@@ -35,7 +35,7 @@ const Home = () => {
                         setInputLocation(newInputValue);
                     }}
                     id="controllable-states-demo"
-                    options={autofillData}
+                    options={autoFillOptions.filter((autofill:AutofillResults)=>{return autofill.location })}
                     sx={{ width: 300 }}
                     renderInput={(params) => <TextField {...params} label="Select Location" />}
                 />
