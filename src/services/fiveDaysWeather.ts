@@ -1,4 +1,5 @@
 import axios from "axios";
+import { API_KEY } from "./api_key";
 
 export interface Headline {
     EffectiveDate: Date;
@@ -56,7 +57,7 @@ export interface FiveDaysWeatherRootObject {
 
 const fiveDaysWeatherUrl = 'http://dataservice.accuweather.com/forecasts/v1/daily/5day';
 
-export async function getFiveDaysWeatherService(location_key: number): Promise<FiveDaysWeatherRootObject> {
-  const response: FiveDaysWeatherRootObject = await axios.get(`${fiveDaysWeatherUrl}/${location_key}?apikey=${process.env.API_KEY}`);
-  return response;
+export async function getFiveDaysWeatherService(location_key: string): Promise<FiveDaysWeatherRootObject> {
+    const {data} = await axios.get(`${fiveDaysWeatherUrl}/${location_key}?apikey=${API_KEY}`);
+    return data;
 }

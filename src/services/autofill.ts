@@ -1,4 +1,5 @@
 import axios from "axios";
+import { API_KEY } from "./api_key";
 
 export interface Country {
   ID: string;
@@ -26,7 +27,7 @@ export interface AutofillResults {
 const autoCompleteUrl = 'http://dataservice.accuweather.com/locations/v1/cities/autocomplete';
 
 export async function getAutofillOptionsService(location_input: string): Promise<AutofillResults[]> {
-  const response: AutofillRootObject[] = await axios.get(`${autoCompleteUrl}?apikey=${process.env.API_KEY}&q=${location_input}`);
-  const result:AutofillResults[] = response.map((r: AutofillRootObject) => { return { key: r.Key, location: r.LocalizedName } })
+  const { data } = await axios.get(`${autoCompleteUrl}?apikey=${API_KEY}&q=${location_input.toLowerCase()}`);
+  const result: AutofillResults[] = data?.map((r: AutofillRootObject) => { return { key: r.Key, location: r.LocalizedName.toLowerCase() } })
   return result;
 }

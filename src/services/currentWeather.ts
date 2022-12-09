@@ -1,4 +1,5 @@
 import axios from "axios";
+import { API_KEY } from "./api_key";
 
 export interface Metric {
   Value: number;
@@ -32,7 +33,7 @@ export interface CurrentWeatherRootObject {
 
 const currentWeatherUrl = 'http://dataservice.accuweather.com/currentconditions/v1';
 
-export async function getCurrentWeatherService(location_key: number): Promise<CurrentWeatherRootObject[]> {
-  const response: CurrentWeatherRootObject[] = await axios.get(`${currentWeatherUrl}/${location_key}?apikey=${process.env.API_KEY}`);
-  return response;
+export async function getCurrentWeatherService(location_key: string): Promise<CurrentWeatherRootObject[]> {
+  const { data } = await axios.get(`${currentWeatherUrl}/${location_key}?apikey=${API_KEY}`);
+  return data[0];
 }
