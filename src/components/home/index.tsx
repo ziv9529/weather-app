@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import TravelExploreIcon from '@mui/icons-material/TravelExplore';
@@ -10,13 +10,17 @@ import { getAutofillOptionsService } from '../../services/autofill';
 import { AutofillResults } from '../../services/autofill'
 import { getCurrentWeatherService } from '../../services/currentWeather';
 import { getFiveDaysWeatherService } from '../../services/fiveDaysWeather';
+import { useDispatch } from 'react-redux';
+import { addFavorite } from '../../store';
 const Home = () => {
-
     const [autoFillOptionsObject, setAutoFillOptionsObject] = useState<AutofillResults[]>([]);
-    // const initialOptionsState: string[] = autoFillOptionsObject.map((result: AutofillResults) => { return result.location }) || []
-    // const [autoFillOptions, setAutoFillOptions] = useState<string[]>([]);
     const [location, setLocation] = useState<string | null>('tel aviv');
     const [inputLocation, setInputLocation] = useState('tel aviv');
+
+    const [weatherData, setWeatherData] = useState<any>({});
+    const [fiveDaysWeatherData, setFiveDaysWeatherData] = useState<any>({});
+
+    const dispatch = useDispatch();
 
     useEffect(() => {
         const fetchAutofillData = async () => {
@@ -24,19 +28,22 @@ const Home = () => {
             setAutoFillOptionsObject(data)
         }
         fetchAutofillData().catch(console.error);
-        console.log(autoFillOptionsObject);
-        console.log(autoFillOptionsObject.map((result: AutofillResults) => { return result.location }));
-
-        // if (autoFillOptionsObject) setAutoFillOptions(autoFillOptionsObject.map((result: AutofillResults) => { return result.location }))
-        // console.log(autoFillOptions);
-
     }, [inputLocation])
 
     async function getWeather() {
-        const result = await getCurrentWeatherService(autoFillOptionsObject[0].key)
-        console.log(result)
-        const fiveDaysResult = await getFiveDaysWeatherService(autoFillOptionsObject[0].key)
-        console.log(fiveDaysResult)
+        const result = await getCurrentWeatherService(autoFillOptionsObject[0].key);
+        setWeatherData(result)
+        const fiveDaysResult = await getFiveDaysWeatherService(autoFillOptionsObject[0].key);
+        setFiveDaysWeatherData(fiveDaysResult);
+        console.log(weatherData);
+
+    }
+    const onAddToFavorite = () => {
+        dispatch(addFavorite({
+            _name: location || '',
+            _currentTemperture: weatherData?.Temperature?.Metric?.Value,
+            _currentWeather: weatherData?.WeatherText
+        }));
     }
     return (
         <div>
@@ -53,48 +60,31 @@ const Home = () => {
                     }}
                     id="controllable-states-demo"
                     options={autoFillOptionsObject.map((result: AutofillResults) => { return result.location }) || []}
-                    // options={['Istanbul', 'Isfahan', 'Islamabad', 'Ismailia', 'Isolo', 'Isiro', 'Isabela City', 'Isulan', 'Isparta', 'Iserlohn']}
                     sx={{ width: 300 }}
                     renderInput={(params) => <TextField key={location} {...params} label="Controllable" />}
                 />
-                {/* <Autocomplete
-                    value={location}
-                    onChange={(event: React.ChangeEvent<any>, newValue: string | null) => {
-                        setLocation(newValue);
-                    }}
-                    inputValue={inputLocation}
-                    onInputChange={(event: React.ChangeEvent<any>, newInputValue: string) => {
-                        setInputLocation(newInputValue);
-                    }}
-                    id="controllable-states-demo"
-                    options={
-                        (autoFillOptions.filter((autofill: AutofillResults) => { return autofill.location }))
-                    }
-                    sx={{ width: 300 }}
-                    renderInput={(params) => <TextField {...params} label="Select Location" />}
-                /> */}
-                {/* <Autocomplete
-                    value={location}
-                    onChange={(event: React.ChangeEvent<any>, newValue: AutofillResults | null) => {
-                        setLocation(newValue);
-                    }}
-                    inputValue={inputLocation}
-                    onInputChange={(event: React.ChangeEvent<any>, newInputValue: string) => {
-                        setInputLocation(newInputValue);
-                    }}
-                    id="controllable-states-demo"
-                    options={
-                        (autoFillOptions.filter((autofill: AutofillResults) => { return autofill.location }))
-                    }
-                    sx={{ width: 300 }}
-                    renderInput={(params) => <TextField {...params} label="Select Location" />}
-                /> */}
                 <IconButton disabled={!location} onClick={getWeather}  >
                     <TravelExploreIcon />
                 </IconButton>
-
-
             </div>
+            {Object.keys(fiveDaysWeatherData).length !== 0 && Object.keys(weatherData).length !== 0
+                ? <div>
+                    <div>
+                        <h1>{location}</h1>
+                        <button onClick={onAddToFavorite}>add to favorite</button>
+                        <h2>{weatherData?.WeatherText}</h2>
+                        <h2>{weatherData?.Temperature?.Metric?.Value} {weatherData?.Temperature?.Metric?.Unit} </h2>
+                    </div>
+                    <div>
+                        {fiveDaysWeatherData?.DailyForecasts?.map((dayWeather: any) => {
+                            return <>
+                                <h3>{dayWeather?.Date}</h3>
+                                <h3>Between {dayWeather?.Temperature?.Minimum?.Value}° and {dayWeather?.Temperature?.Maximum?.Value}° {dayWeather?.Temperature?.Minimum?.Unit} </h3>
+                            </>
+                        })}
+                    </div>
+                </div>
+                : null}
             {/* <WeatherCard location={location} /> */}
         </div>
     )

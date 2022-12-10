@@ -1,9 +1,10 @@
 import { configureStore, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { useSelector } from "react-redux";
 
-interface FvoriteLocation {
+export interface FvoriteLocation {
     id: number;
     name: string;
+    currentTemperture: number;
     currentWeather: string;
 }
 
@@ -17,13 +18,14 @@ export const favoritesSlice = createSlice({
     name: "favorites",
     initialState,
     reducers: {
-        addFavorite: (state, action: PayloadAction<string>) => {
+        addFavorite: (state, action: PayloadAction<{ _name: string, _currentTemperture: number, _currentWeather: string }>) => {
             state.favorites = [
                 ...state.favorites,
                 {
                     id: state.favorites.length,
-                    name: action.payload,
-                    currentWeather: "currentWeather",
+                    name: action.payload._name,
+                    currentTemperture: action.payload._currentTemperture,
+                    currentWeather: action.payload._currentWeather,
                 },
             ];
         },

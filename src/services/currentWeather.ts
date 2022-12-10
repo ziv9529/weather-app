@@ -33,7 +33,7 @@ export interface CurrentWeatherRootObject {
 
 const currentWeatherUrl = 'http://dataservice.accuweather.com/currentconditions/v1';
 
-export async function getCurrentWeatherService(location_key: string): Promise<CurrentWeatherRootObject[]> {
+export async function getCurrentWeatherService(location_key: string): Promise<CurrentWeatherRootObject> {
   const { data } = await axios.get(`${currentWeatherUrl}/${location_key}?apikey=${API_KEY}`);
   return data[0];
 }
