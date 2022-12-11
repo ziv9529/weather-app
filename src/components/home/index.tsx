@@ -10,37 +10,75 @@ import { getAutofillOptionsService } from '../../services/autofill';
 import { AutofillResults } from '../../services/autofill'
 import { getCurrentWeatherService } from '../../services/currentWeather';
 import { getFiveDaysWeatherService } from '../../services/fiveDaysWeather';
-import { useDispatch } from 'react-redux';
-import { addFavorite } from '../../store';
+import { useDispatch, useSelector } from 'react-redux';
+import { addFavorite, selectCurrentLocation, updateCurrentLocation } from '../../store';
 const Home = () => {
+    const dispatch = useDispatch();
+    const currentLocation = useSelector(selectCurrentLocation);
+
+    const [location, setLocation] = useState<string | null>(currentLocation.location_name);
+    const [inputLocation, setInputLocation] = useState(currentLocation.location_name);
+
     const [autoFillOptionsObject, setAutoFillOptionsObject] = useState<AutofillResults[]>([]);
-    const [location, setLocation] = useState<string | null>('tel aviv');
-    const [inputLocation, setInputLocation] = useState('tel aviv');
 
     const [weatherData, setWeatherData] = useState<any>({});
     const [fiveDaysWeatherData, setFiveDaysWeatherData] = useState<any>({});
 
-    const dispatch = useDispatch();
+    async function fetchAutofillData() {
+        const data = await getAutofillOptionsService(inputLocation.toLowerCase());
+        setAutoFillOptionsObject(data);
+        console.log("setAutoFillOptionsObject(data) done");
+    }
 
     useEffect(() => {
-        const fetchAutofillData = async () => {
-            const data = await getAutofillOptionsService(inputLocation.toLowerCase());
-            setAutoFillOptionsObject(data)
+        console.log("inside first useEffect");
+        const fetchCurrentWeather = async () => {
+            if (autoFillOptionsObject.length > 0) {
+                console.log("there is autoFillOptionsObject");
+                console.log(autoFillOptionsObject);
+                await getWeather();
+                console.log({ weatherData });
+                if (weatherData) {
+                    dispatch(updateCurrentLocation({
+                        _key: currentLocation.key,
+                        _location_name: currentLocation.location_name,
+                        _currentTemperture: weatherData?.Temperature?.Metric?.Value,
+                        _currentWeather: weatherData?.WeatherText
+                    }))
+                }
+            } else {
+                console.log("not good ");
+
+            }
+
         }
+        fetchAutofillData().catch(console.error);
+        fetchCurrentWeather().catch(console.error);
+
+    }, [])
+
+    useEffect(() => {
         fetchAutofillData().catch(console.error);
     }, [inputLocation])
 
     async function getWeather() {
-        const result = await getCurrentWeatherService(autoFillOptionsObject[0].key);
-        setWeatherData(result)
-        const fiveDaysResult = await getFiveDaysWeatherService(autoFillOptionsObject[0].key);
-        setFiveDaysWeatherData(fiveDaysResult);
-        console.log(weatherData);
+        console.log("inside getWeather");
+        console.log(autoFillOptionsObject);
+        if (autoFillOptionsObject[0]) {
+            console.log("inside getWeather if");
+            const result = await getCurrentWeatherService(autoFillOptionsObject[0].key);
+            setWeatherData(result)
+            const fiveDaysResult = await getFiveDaysWeatherService(autoFillOptionsObject[0].key);
+            setFiveDaysWeatherData(fiveDaysResult);
+            console.log("get weather done");
+            console.log(weatherData);
 
+        }
     }
     const onAddToFavorite = () => {
         dispatch(addFavorite({
-            _name: location || '',
+            _key: autoFillOptionsObject[0].key,
+            _location_name: autoFillOptionsObject[0].location,
             _currentTemperture: weatherData?.Temperature?.Metric?.Value,
             _currentWeather: weatherData?.WeatherText
         }));
@@ -76,16 +114,15 @@ const Home = () => {
                         <h2>{weatherData?.Temperature?.Metric?.Value} {weatherData?.Temperature?.Metric?.Unit} </h2>
                     </div>
                     <div>
-                        {fiveDaysWeatherData?.DailyForecasts?.map((dayWeather: any) => {
-                            return <>
+                        {fiveDaysWeatherData?.DailyForecasts?.map((dayWeather: any, index: number) => {
+                            return <div key={index}>
                                 <h3>{dayWeather?.Date}</h3>
                                 <h3>Between {dayWeather?.Temperature?.Minimum?.Value}° and {dayWeather?.Temperature?.Maximum?.Value}° {dayWeather?.Temperature?.Minimum?.Unit} </h3>
-                            </>
+                            </div>
                         })}
                     </div>
                 </div>
                 : null}
-            {/* <WeatherCard location={location} /> */}
         </div>
     )
 }

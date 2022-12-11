@@ -29,16 +29,6 @@ const Layout = () => {
 
   return (
     <>
-      {/* <nav>
-        <ul>
-          <li>
-            <Link to="/">Home</Link>
-          </li>
-          <li>
-            <Link to="/favorites">Favorites</Link>
-          </li>
-        </ul>
-      </nav> */}
       <AppBar position="static">
         <Container maxWidth="xl">
           <Toolbar disableGutters>
@@ -90,8 +80,8 @@ const Layout = () => {
                   display: { xs: 'block', md: 'none' },
                 }}
               >
-                {pages.map((page) => (
-                  <MenuItem key={page.textView} onClick={handleCloseNavMenu}>
+                {pages.map((page, index) => (
+                  <MenuItem key={index} onClick={handleCloseNavMenu}>
                     <Link to={page.path}><Typography textAlign="center">{page.textView}</Typography></Link>
                   </MenuItem>
                 ))}
@@ -117,9 +107,9 @@ const Layout = () => {
               Weather today
             </Typography>
             <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-              {pages.map((page) => (
+              {pages.map((page, index) => (
 
-                <Link to={page.path}><Button
+                <Link to={page.path} key={index}><Button
                   key={page.textView}
                   onClick={handleCloseNavMenu}
                   sx={{ my: 2, color: 'white', display: 'block' }}
