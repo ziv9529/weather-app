@@ -1,11 +1,15 @@
-import { configureStore, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { applyMiddleware, combineReducers, configureStore, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { FiveDaysWeatherRootObject } from "../services/fiveDaysWeather";
+import { currentLocationSlice } from "./currentLocationSlice";
+
 
 export interface Location {
     key: string;
     location_name: string;
     currentTemperture: number;
     currentWeather: string;
-    isFavorite:boolean;
+    isFavorite: boolean;
+    fiveDaysWeather?: FiveDaysWeatherRootObject
 }
 
 interface FavoritesSliceState {
@@ -19,15 +23,15 @@ export const favoritesSlice = createSlice({
     name: "favorites",
     initialState,
     reducers: {
-        addFavorite: (state, action: PayloadAction<{ _key: string, _location_name: string, _currentTemperture: number, _currentWeather: string }>) => {
+        addFavorite: (state, action: PayloadAction<Location>) => {
             state.favorites = [
                 ...state.favorites,
                 {
-                    key: action.payload._key,
-                    location_name: action.payload._location_name,
-                    currentTemperture: action.payload._currentTemperture,
-                    currentWeather: action.payload._currentWeather,
-                    isFavorite:true
+                    key: action.payload.key,
+                    location_name: action.payload.location_name,
+                    currentTemperture: action.payload.currentTemperture,
+                    currentWeather: action.payload.currentWeather,
+                    isFavorite: action.payload.isFavorite
                 },
             ];
         },
@@ -39,40 +43,22 @@ export const favoritesSlice = createSlice({
 
 export const { addFavorite, removeFavorite } = favoritesSlice.actions;
 
-export const currentLocationSlice = createSlice({
-    name: "currentLocation",
-    initialState: {
-        key: '215854',
-        location_name: 'Tel Aviv',
-        currentTemperture: -999,
-        currentWeather: '',
-        isFavorite:false
-    } as Location,
-    reducers: {
-        updateCurrentLocation: (state, action: PayloadAction<{ _key: string, _location_name: string, _currentTemperture: number, _currentWeather: string }>) => {
-            state = {
-                ...state,
-                key: action.payload._key,
-                location_name: action.payload._location_name,
-                currentTemperture: action.payload._currentTemperture,
-                currentWeather: action.payload._currentWeather
-            }
-        },
-    },
-});
 
-export const { updateCurrentLocation } = currentLocationSlice.actions;
+// const rootReducer = combineReducers({
+//     favorites: favoritesSlice.reducer,
+//     currentLocation: currentLocationSlice.reducer
+// });
 
 const store = configureStore({
     reducer: {
         favorites: favoritesSlice.reducer,
-        currentLocation: currentLocationSlice.reducer,
+        currentLocation: currentLocationSlice.reducer
     },
 });
 
 type RootState = ReturnType<typeof store.getState>;
 
 export const selectFavorites = (state: RootState) => state.favorites.favorites;
-export const selectCurrentLocation = (state: RootState) => state.currentLocation;
+export const selectCurrentLocation = (state: RootState) => state.currentLocation.current_location;
 
 export default store;

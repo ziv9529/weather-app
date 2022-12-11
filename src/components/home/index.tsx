@@ -11,78 +11,103 @@ import { AutofillResults } from '../../services/autofill'
 import { getCurrentWeatherService } from '../../services/currentWeather';
 import { getFiveDaysWeatherService } from '../../services/fiveDaysWeather';
 import { useDispatch, useSelector } from 'react-redux';
-import { addFavorite, selectCurrentLocation, updateCurrentLocation } from '../../store';
+import { addFavorite, Location, selectCurrentLocation } from '../../store';
+import { updateCurrentLocation } from '../../store/currentLocationSlice';
+
 const Home = () => {
     const dispatch = useDispatch();
     const currentLocation = useSelector(selectCurrentLocation);
-
     const [location, setLocation] = useState<string | null>(currentLocation.location_name);
     const [inputLocation, setInputLocation] = useState(currentLocation.location_name);
 
     const [autoFillOptionsObject, setAutoFillOptionsObject] = useState<AutofillResults[]>([]);
-
-    const [weatherData, setWeatherData] = useState<any>({});
-    const [fiveDaysWeatherData, setFiveDaysWeatherData] = useState<any>({});
-
-    async function fetchAutofillData() {
-        const data = await getAutofillOptionsService(inputLocation.toLowerCase());
-        setAutoFillOptionsObject(data);
-        console.log("setAutoFillOptionsObject(data) done");
-    }
-
+    // 215854
     useEffect(() => {
-        console.log("inside first useEffect");
         const fetchCurrentWeather = async () => {
-            if (autoFillOptionsObject.length > 0) {
-                console.log("there is autoFillOptionsObject");
-                console.log(autoFillOptionsObject);
-                await getWeather();
-                console.log({ weatherData });
-                if (weatherData) {
-                    dispatch(updateCurrentLocation({
-                        _key: currentLocation.key,
-                        _location_name: currentLocation.location_name,
-                        _currentTemperture: weatherData?.Temperature?.Metric?.Value,
-                        _currentWeather: weatherData?.WeatherText
-                    }))
+            const data = await getAutofillOptionsService(inputLocation.toLowerCase());
+            const result = await getCurrentWeatherService(data[0].key);
+            const fiveDaysResult = await getFiveDaysWeatherService(data[0].key);
+            if (result && fiveDaysResult) {
+                console.log(currentLocation);
+                const locationData: Location = {
+                    key: currentLocation.key,
+                    location_name: currentLocation.location_name,
+                    currentTemperture: result?.Temperature?.Metric?.Value,
+                    currentWeather: result?.WeatherText,
+                    isFavorite: false,
+                    fiveDaysWeather: fiveDaysResult
                 }
-            } else {
-                console.log("not good ");
-
+                dispatch(updateCurrentLocation(locationData))
+                // {
+                //     _key: currentLocation.key,
+                //     _location_name: currentLocation.location_name,
+                //     _currentTemperture: result?.Temperature?.Metric?.Value,
+                //     _currentWeather: result?.WeatherText,
+                //     _fiveDaysWeather: fiveDaysResult
+                // }
             }
-
         }
-        fetchAutofillData().catch(console.error);
         fetchCurrentWeather().catch(console.error);
-
-    }, [])
+    }, [dispatch])
 
     useEffect(() => {
+        async function fetchAutofillData() {
+            const data = await getAutofillOptionsService(inputLocation.toLowerCase());
+            setAutoFillOptionsObject(data);
+        }
         fetchAutofillData().catch(console.error);
     }, [inputLocation])
 
     async function getWeather() {
-        console.log("inside getWeather");
-        console.log(autoFillOptionsObject);
+        console.log(autoFillOptionsObject[0]);
+
         if (autoFillOptionsObject[0]) {
-            console.log("inside getWeather if");
             const result = await getCurrentWeatherService(autoFillOptionsObject[0].key);
-            setWeatherData(result)
             const fiveDaysResult = await getFiveDaysWeatherService(autoFillOptionsObject[0].key);
-            setFiveDaysWeatherData(fiveDaysResult);
-            console.log("get weather done");
-            console.log(weatherData);
+            console.log(autoFillOptionsObject[0]);
+
+            const locationData: Location = {
+                key: autoFillOptionsObject[0].key,
+                location_name: autoFillOptionsObject[0].location,
+                currentTemperture: result?.Temperature?.Metric?.Value,
+                currentWeather: result?.WeatherText,
+                isFavorite: false,
+                fiveDaysWeather: fiveDaysResult
+            }
+            dispatch(updateCurrentLocation(locationData))
 
         }
+
+        // if (autoFillOptionsObject[0]) {
+        //     const result = await getCurrentWeatherService(autoFillOptionsObject[0].key);
+        //     setWeatherData(result)
+        //     const fiveDaysResult = await getFiveDaysWeatherService(autoFillOptionsObject[0].key);
+        //     setFiveDaysWeatherData(fiveDaysResult);
+        // }
+
     }
     const onAddToFavorite = () => {
-        dispatch(addFavorite({
-            _key: autoFillOptionsObject[0].key,
-            _location_name: autoFillOptionsObject[0].location,
-            _currentTemperture: weatherData?.Temperature?.Metric?.Value,
-            _currentWeather: weatherData?.WeatherText
-        }));
+        const addToFavoriteData: Location = {
+            key: autoFillOptionsObject[0].key,
+            location_name: autoFillOptionsObject[0].location,
+            currentTemperture: currentLocation.currentTemperture,
+            currentWeather: currentLocation.currentWeather,
+            isFavorite: true,
+        }
+        dispatch(addFavorite(addToFavoriteData));
     }
+    // async function onUpdateCurrentLocation(location_key: string) {
+    //     const result = await getCurrentWeatherService(location_key);
+    //     const fiveDaysResult = await getFiveDaysWeatherService(location_key);
+    //     dispatch(updateCurrentLocation({
+    //         _key: currentLocation.key,
+    //         _location_name: currentLocation.location_name,
+    //         _currentTemperture: result?.Temperature?.Metric?.Value,
+    //         _currentWeather: result?.WeatherText,
+    //         _fiveDaysWeather: fiveDaysResult
+    //     }))
+    // }
+
     return (
         <div>
             <h1>Home</h1>
@@ -105,16 +130,16 @@ const Home = () => {
                     <TravelExploreIcon />
                 </IconButton>
             </div>
-            {Object.keys(fiveDaysWeatherData).length !== 0 && Object.keys(weatherData).length !== 0
+            {currentLocation
                 ? <div>
                     <div>
-                        <h1>{location}</h1>
+                        <h1>{currentLocation?.location_name}</h1>
                         <button onClick={onAddToFavorite}>add to favorite</button>
-                        <h2>{weatherData?.WeatherText}</h2>
-                        <h2>{weatherData?.Temperature?.Metric?.Value} {weatherData?.Temperature?.Metric?.Unit} </h2>
+                        <h2>{currentLocation?.currentWeather}</h2>
+                        <h2>{currentLocation?.currentTemperture}°  </h2>
                     </div>
                     <div>
-                        {fiveDaysWeatherData?.DailyForecasts?.map((dayWeather: any, index: number) => {
+                        {currentLocation?.fiveDaysWeather?.DailyForecasts?.map((dayWeather: any, index: number) => {
                             return <div key={index}>
                                 <h3>{dayWeather?.Date}</h3>
                                 <h3>Between {dayWeather?.Temperature?.Minimum?.Value}° and {dayWeather?.Temperature?.Maximum?.Value}° {dayWeather?.Temperature?.Minimum?.Unit} </h3>
