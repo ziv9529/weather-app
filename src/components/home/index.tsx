@@ -11,16 +11,19 @@ import { AutofillResults } from '../../services/autofill'
 import { getCurrentWeatherService } from '../../services/currentWeather';
 import { getFiveDaysWeatherService } from '../../services/fiveDaysWeather';
 import { useDispatch, useSelector } from 'react-redux';
-import { addFavorite, Location, selectCurrentLocation } from '../../store';
+import { selectCurrentLocation, selectFavorites } from '../../store';
 import { updateCurrentLocation } from '../../store/currentLocationSlice';
+import { addFavorite, Location } from '../../store/favoritesSlice';
 
 const Home = () => {
     const dispatch = useDispatch();
     const currentLocation = useSelector(selectCurrentLocation);
+    const favoritesLocations = useSelector(selectFavorites);
+
+    const [autoFillOptionsObject, setAutoFillOptionsObject] = useState<AutofillResults[]>([]);
     const [location, setLocation] = useState<string | null>(currentLocation.location_name);
     const [inputLocation, setInputLocation] = useState(currentLocation.location_name);
 
-    const [autoFillOptionsObject, setAutoFillOptionsObject] = useState<AutofillResults[]>([]);
     // 215854
     useEffect(() => {
         const fetchCurrentWeather = async () => {
@@ -28,13 +31,11 @@ const Home = () => {
             const result = await getCurrentWeatherService(data[0].key);
             const fiveDaysResult = await getFiveDaysWeatherService(data[0].key);
             if (result && fiveDaysResult) {
-                console.log(currentLocation);
                 const locationData: Location = {
                     key: currentLocation.key,
                     location_name: currentLocation.location_name,
                     currentTemperture: result?.Temperature?.Metric?.Value,
                     currentWeather: result?.WeatherText,
-                    isFavorite: false,
                     fiveDaysWeather: fiveDaysResult
                 }
                 dispatch(updateCurrentLocation(locationData))
@@ -53,6 +54,7 @@ const Home = () => {
     useEffect(() => {
         async function fetchAutofillData() {
             const data = await getAutofillOptionsService(inputLocation.toLowerCase());
+            console.log(data);
             setAutoFillOptionsObject(data);
         }
         fetchAutofillData().catch(console.error);
@@ -71,7 +73,6 @@ const Home = () => {
                 location_name: autoFillOptionsObject[0].location,
                 currentTemperture: result?.Temperature?.Metric?.Value,
                 currentWeather: result?.WeatherText,
-                isFavorite: false,
                 fiveDaysWeather: fiveDaysResult
             }
             dispatch(updateCurrentLocation(locationData))
@@ -92,7 +93,6 @@ const Home = () => {
             location_name: autoFillOptionsObject[0].location,
             currentTemperture: currentLocation.currentTemperture,
             currentWeather: currentLocation.currentWeather,
-            isFavorite: true,
         }
         dispatch(addFavorite(addToFavoriteData));
     }
@@ -111,6 +111,8 @@ const Home = () => {
     return (
         <div>
             <h1>Home</h1>
+            <h2>location:{JSON.stringify(location)}</h2>
+            <h2>inputLocation:{JSON.stringify(inputLocation)}</h2>
             <div>
                 <Autocomplete
                     value={location}
@@ -122,9 +124,20 @@ const Home = () => {
                         setInputLocation(newInputValue);
                     }}
                     id="controllable-states-demo"
-                    options={autoFillOptionsObject.map((result: AutofillResults) => { return result.location }) || []}
+                    options={
+                        autoFillOptionsObject
+                            ? autoFillOptionsObject.map((result: AutofillResults) => result.location)
+                            : []
+                    }
+                    renderOption={(props, option) => {
+                        return (
+                            <li {...props} key={option}>
+                                {option}
+                            </li>
+                        );
+                    }}
                     sx={{ width: 300 }}
-                    renderInput={(params) => <TextField key={location} {...params} label="Controllable" />}
+                    renderInput={(params) => <TextField {...params} label="Controllable" />}
                 />
                 <IconButton disabled={!location} onClick={getWeather}  >
                     <TravelExploreIcon />
@@ -134,6 +147,11 @@ const Home = () => {
                 ? <div>
                     <div>
                         <h1>{currentLocation?.location_name}</h1>
+                        {
+                            favoritesLocations.map((location: Location) => location.location_name).includes(currentLocation?.location_name)
+                                ? <h2>favorite</h2>
+                                : <h2>not favorite</h2>
+                        }
                         <button onClick={onAddToFavorite}>add to favorite</button>
                         <h2>{currentLocation?.currentWeather}</h2>
                         <h2>{currentLocation?.currentTemperture}°  </h2>

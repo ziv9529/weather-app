@@ -28,6 +28,6 @@ const autoCompleteUrl = 'http://dataservice.accuweather.com/locations/v1/cities/
 
 export async function getAutofillOptionsService(location_input: string): Promise<AutofillResults[]> {
   const { data } = await axios.get(`${autoCompleteUrl}?apikey=${API_KEY}&q=${location_input}`);
-  const result: AutofillResults[] = data?.map((r: AutofillRootObject) => { return { key: r.Key, location: r.LocalizedName } })
+  const result: AutofillResults[] = data?.map((r: AutofillRootObject) => { return { key: r.Key, location: r.AdministrativeArea.LocalizedName } })
   return result;
 }

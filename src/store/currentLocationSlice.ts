@@ -1,6 +1,7 @@
 import { applyMiddleware, combineReducers, configureStore, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { FiveDaysWeatherRootObject } from "../services/fiveDaysWeather";
-import { Location } from "./index"
+import { Location } from "./favoritesSlice";
+
 interface FavoritesSliceState {
     current_location: Location;
 }
@@ -9,8 +10,7 @@ const initialState: FavoritesSliceState = {
         key: '215854',
         location_name: 'Tel Aviv',
         currentTemperture: -999,
-        currentWeather: '',
-        isFavorite: false
+        currentWeather: ''
     },
 };
 
@@ -25,8 +25,7 @@ export const currentLocationSlice = createSlice({
                 location_name: action.payload.location_name,
                 currentTemperture: action.payload.currentTemperture,
                 currentWeather: action.payload.currentWeather,
-                fiveDaysWeather: action.payload.fiveDaysWeather,
-                isFavorite: action.payload.isFavorite
+                fiveDaysWeather: action.payload.fiveDaysWeather
             }
         },
     },

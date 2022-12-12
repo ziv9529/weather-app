@@ -1,6 +1,7 @@
 import React from 'react'
 import { useSelector } from 'react-redux';
-import { Location, selectCurrentLocation, selectFavorites } from '../../store';
+import { selectCurrentLocation, selectFavorites } from '../../store';
+import { Location } from '../../store/favoritesSlice';
 
 const Favorites = () => {
     const favorites = useSelector(selectFavorites);

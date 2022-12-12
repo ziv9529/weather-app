@@ -36,4 +36,5 @@ const currentWeatherUrl = 'http://dataservice.accuweather.com/currentconditions/
 export async function getCurrentWeatherService(location_key: string): Promise<CurrentWeatherRootObject> {
   const { data } = await axios.get(`${currentWeatherUrl}/${location_key}?apikey=${API_KEY}`);
   return data[0];
+  
 }
