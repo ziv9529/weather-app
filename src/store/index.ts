@@ -7,6 +7,9 @@ const store = configureStore({
         favorites: favoritesSlice.reducer,
         currentLocation: currentLocationSlice.reducer
     },
+    middleware: (getDefaultMiddleware)=> getDefaultMiddleware({
+        serializableCheck: false
+    })
 });
 
 type RootState = ReturnType<typeof store.getState>;

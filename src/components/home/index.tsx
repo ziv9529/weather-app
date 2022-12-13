@@ -9,11 +9,18 @@ import IconButton from '@mui/material/IconButton';
 import { getAutofillOptionsService } from '../../services/autofill';
 import { AutofillResults } from '../../services/autofill'
 import { getCurrentWeatherService } from '../../services/currentWeather';
-import { getFiveDaysWeatherService } from '../../services/fiveDaysWeather';
+import { DailyForecast, getFiveDaysWeatherService } from '../../services/fiveDaysWeather';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectCurrentLocation, selectFavorites } from '../../store';
 import { updateCurrentLocation } from '../../store/currentLocationSlice';
-import { addFavorite, Location } from '../../store/favoritesSlice';
+import { addFavorite, Location, removeFavorite } from '../../store/favoritesSlice';
+import Container from '@mui/material/Container';
+import "./index.css";
+import { convertFahrenheitToCelsius, weekday } from './helpers';
+import Button from '@mui/material/Button';
+
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 
 const Home = () => {
     const dispatch = useDispatch();
@@ -54,7 +61,6 @@ const Home = () => {
     useEffect(() => {
         async function fetchAutofillData() {
             const data = await getAutofillOptionsService(inputLocation.toLowerCase());
-            console.log(data);
             setAutoFillOptionsObject(data);
         }
         fetchAutofillData().catch(console.error);
@@ -89,12 +95,17 @@ const Home = () => {
     }
     const onAddToFavorite = () => {
         const addToFavoriteData: Location = {
-            key: autoFillOptionsObject[0].key,
-            location_name: autoFillOptionsObject[0].location,
+            key: currentLocation.key,
+            location_name: currentLocation.location_name,
+            // key: autoFillOptionsObject[0].key,
+            // location_name: autoFillOptionsObject[0].location,
             currentTemperture: currentLocation.currentTemperture,
             currentWeather: currentLocation.currentWeather,
         }
         dispatch(addFavorite(addToFavoriteData));
+    }
+    const onRemoveFromFavorite = () => {
+        dispatch(removeFavorite(currentLocation.key));
     }
     // async function onUpdateCurrentLocation(location_key: string) {
     //     const result = await getCurrentWeatherService(location_key);
@@ -109,11 +120,9 @@ const Home = () => {
     // }
 
     return (
-        <div>
-            <h1>Home</h1>
-            <h2>location:{JSON.stringify(location)}</h2>
-            <h2>inputLocation:{JSON.stringify(inputLocation)}</h2>
-            <div>
+        <div className='main-section'>
+            <h1 id='header-view'>Get Today's weather WORLDWIDE! </h1>
+            <div className='search-section'>
                 <Autocomplete
                     value={location}
                     onChange={(event: any, newValue: string | null) => {
@@ -137,13 +146,53 @@ const Home = () => {
                         );
                     }}
                     sx={{ width: 300 }}
-                    renderInput={(params) => <TextField {...params} label="Controllable" />}
+                    renderInput={(params) => <TextField {...params} label="Select City" />}
                 />
                 <IconButton disabled={!location} onClick={getWeather}  >
                     <TravelExploreIcon />
                 </IconButton>
             </div>
-            {currentLocation
+
+            <div className='main-weather-section'>
+                <div className='current-weather-section'>
+                    <div className='weather-header'>
+                        <h1>{currentLocation.location_name}</h1>
+                        <h2>{currentLocation.currentWeather}, {currentLocation.currentTemperture}° C</h2>
+                    </div>
+                    <div>
+                        {
+                            favoritesLocations.map((location: Location) => location.location_name).includes(currentLocation?.location_name)
+                                ? <Button onClick={onRemoveFromFavorite} variant="text">remove from favorite <FavoriteIcon className='fav-icon' /></Button>
+                                : <Button onClick={onAddToFavorite} variant="text">add to favorite <FavoriteBorderIcon className='fav-icon' /></Button>
+                        }
+                    </div>
+                </div>
+                <div className='five-days-weather-section'>
+                    {
+                        currentLocation.fiveDaysWeather?.DailyForecasts.map((oneDayWeather: DailyForecast, index: number) => {
+                            return (
+                                <div className='weather-one-day' key={index}>
+
+                                    <h3>{oneDayWeather.Date.toLocaleDateString()}</h3>
+
+                                    {oneDayWeather.Temperature.Minimum.UnitType === 18
+                                        ? <h3>
+                                            {convertFahrenheitToCelsius(oneDayWeather.Temperature.Minimum.Value)}° -
+                                            {convertFahrenheitToCelsius(oneDayWeather.Temperature.Maximum.Value)}° C
+                                        </h3>
+                                        : <h3> {oneDayWeather.Temperature.Minimum.Value} -
+                                            {oneDayWeather.Temperature.Maximum.Value} ° F
+                                        </h3>
+                                    }
+                                    <h3>{weekday[oneDayWeather.Date.getDay()]}</h3>
+                                </div>
+                            )
+                        })
+                    }
+                </div>
+
+            </div>
+            {/* {currentLocation
                 ? <div>
                     <div>
                         <h1>{currentLocation?.location_name}</h1>
@@ -165,7 +214,7 @@ const Home = () => {
                         })}
                     </div>
                 </div>
-                : null}
+                : null} */}
         </div>
     )
 }

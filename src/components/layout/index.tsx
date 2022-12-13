@@ -13,6 +13,7 @@ import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import WbSunnyIcon from '@mui/icons-material/WbSunny';
+import "./index.css";
 
 const pages = [{ path: '', textView: 'Home' }, { path: 'favorites', textView: 'Favorites' }];
 
@@ -108,13 +109,11 @@ const Layout = () => {
             </Typography>
             <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
               {pages.map((page, index) => (
-
                 <Link to={page.path} key={index}><Button
                   key={page.textView}
                   onClick={handleCloseNavMenu}
                   sx={{ my: 2, color: 'white', display: 'block' }}
                 >{page.textView}</Button></Link>
-
               ))}
             </Box>
 

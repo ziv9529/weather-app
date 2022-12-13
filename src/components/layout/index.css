@@ -1,0 +1,12 @@
+a {
+    text-decoration: none
+}
+
+/* #1976d2 */
+
+@media screen and (max-width: 900px) {
+    a {
+        color: #1976d2;
+    }
+
+}

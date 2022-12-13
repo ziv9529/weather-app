@@ -8,11 +8,6 @@
     --normal-font-size: 1rem;
 }
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
 
 html {
     scroll-behavior: smooth;
@@ -20,7 +15,8 @@ html {
 
 body,
 button,
-input {
-    font-family: var(--body-font);
+input,
+a {
+    font-family: var(--body-font) !important;
     font-size: var(--normal-font-size);
 }
