@@ -1,13 +1,9 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap");
 
 :root {
-    /* font type */
     --body-font: "Poppins", sans-serif;
-
-    /* font zise */
     --normal-font-size: 1rem;
 }
-
 
 html {
     scroll-behavior: smooth;
@@ -16,7 +12,8 @@ html {
 body,
 button,
 input,
-a {
+a,
+p {
     font-family: var(--body-font) !important;
     font-size: var(--normal-font-size);
 }

@@ -1,38 +1,42 @@
-import React, { useEffect, useState, useCallback } from 'react'
-import TextField from '@mui/material/TextField';
-import InputAdornment from '@mui/material/InputAdornment';
-import TravelExploreIcon from '@mui/icons-material/TravelExplore';
-import { autofillData, currentWeatherResponse } from '../data';
-import WeatherCard from './weatherCard';
-import Autocomplete from '@mui/material/Autocomplete';
-import IconButton from '@mui/material/IconButton';
+import React, { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux';
+
 import { getAutofillOptionsService } from '../../services/autofill';
 import { AutofillResults } from '../../services/autofill'
 import { getCurrentWeatherService } from '../../services/currentWeather';
 import { DailyForecast, getFiveDaysWeatherService } from '../../services/fiveDaysWeather';
-import { useDispatch, useSelector } from 'react-redux';
-import { selectCurrentLocation, selectFavorites } from '../../store';
+
+import { selectCurrentLocation, selectFavorites, selectIsCelsius } from '../../store';
 import { updateCurrentLocation } from '../../store/currentLocationSlice';
 import { addFavorite, Location, removeFavorite } from '../../store/favoritesSlice';
-import Container from '@mui/material/Container';
-import "./index.css";
-import { convertFahrenheitToCelsius, weekday } from './helpers';
-import Button from '@mui/material/Button';
 
+import { convertCelsiusToFahrenheit, convertFahrenheitToCelsius, weekday } from './helpers';
+
+import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
+import TextField from '@mui/material/TextField';
+import TravelExploreIcon from '@mui/icons-material/TravelExplore';
+import Autocomplete from '@mui/material/Autocomplete';
+import IconButton from '@mui/material/IconButton';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+
+import "./index.css";
 
 const Home = () => {
     const dispatch = useDispatch();
     const currentLocation = useSelector(selectCurrentLocation);
     const favoritesLocations = useSelector(selectFavorites);
+    const isCelsius = useSelector(selectIsCelsius);
 
     const [autoFillOptionsObject, setAutoFillOptionsObject] = useState<AutofillResults[]>([]);
     const [location, setLocation] = useState<string | null>(currentLocation.location_name);
     const [inputLocation, setInputLocation] = useState(currentLocation.location_name);
+    const [inputError, setInputError] = useState<boolean>(false);
+    const [loader, setLoader] = useState<boolean>(false);
 
-    // 215854
     useEffect(() => {
+        setLoader(true);
         const fetchCurrentWeather = async () => {
             const data = await getAutofillOptionsService(inputLocation.toLowerCase());
             const result = await getCurrentWeatherService(data[0].key);
@@ -45,15 +49,9 @@ const Home = () => {
                     currentWeather: result?.WeatherText,
                     fiveDaysWeather: fiveDaysResult
                 }
-                dispatch(updateCurrentLocation(locationData))
-                // {
-                //     _key: currentLocation.key,
-                //     _location_name: currentLocation.location_name,
-                //     _currentTemperture: result?.Temperature?.Metric?.Value,
-                //     _currentWeather: result?.WeatherText,
-                //     _fiveDaysWeather: fiveDaysResult
-                // }
-            }
+                dispatch(updateCurrentLocation(locationData));
+                setLoader(false);
+            } else { setLoader(false); alert('something went wrong please try again later') }
         }
         fetchCurrentWeather().catch(console.error);
     }, [dispatch])
@@ -67,13 +65,10 @@ const Home = () => {
     }, [inputLocation])
 
     async function getWeather() {
-        console.log(autoFillOptionsObject[0]);
-
+        setLoader(true);
         if (autoFillOptionsObject[0]) {
             const result = await getCurrentWeatherService(autoFillOptionsObject[0].key);
             const fiveDaysResult = await getFiveDaysWeatherService(autoFillOptionsObject[0].key);
-            console.log(autoFillOptionsObject[0]);
-
             const locationData: Location = {
                 key: autoFillOptionsObject[0].key,
                 location_name: autoFillOptionsObject[0].location,
@@ -82,23 +77,13 @@ const Home = () => {
                 fiveDaysWeather: fiveDaysResult
             }
             dispatch(updateCurrentLocation(locationData))
-
-        }
-
-        // if (autoFillOptionsObject[0]) {
-        //     const result = await getCurrentWeatherService(autoFillOptionsObject[0].key);
-        //     setWeatherData(result)
-        //     const fiveDaysResult = await getFiveDaysWeatherService(autoFillOptionsObject[0].key);
-        //     setFiveDaysWeatherData(fiveDaysResult);
-        // }
-
+            setLoader(false);
+        } else { setLoader(false); alert('something went wrong please try again later'); }
     }
     const onAddToFavorite = () => {
         const addToFavoriteData: Location = {
             key: currentLocation.key,
             location_name: currentLocation.location_name,
-            // key: autoFillOptionsObject[0].key,
-            // location_name: autoFillOptionsObject[0].location,
             currentTemperture: currentLocation.currentTemperture,
             currentWeather: currentLocation.currentWeather,
         }
@@ -107,22 +92,13 @@ const Home = () => {
     const onRemoveFromFavorite = () => {
         dispatch(removeFavorite(currentLocation.key));
     }
-    // async function onUpdateCurrentLocation(location_key: string) {
-    //     const result = await getCurrentWeatherService(location_key);
-    //     const fiveDaysResult = await getFiveDaysWeatherService(location_key);
-    //     dispatch(updateCurrentLocation({
-    //         _key: currentLocation.key,
-    //         _location_name: currentLocation.location_name,
-    //         _currentTemperture: result?.Temperature?.Metric?.Value,
-    //         _currentWeather: result?.WeatherText,
-    //         _fiveDaysWeather: fiveDaysResult
-    //     }))
-    // }
-
     return (
         <div className='main-section'>
-            <h1 id='header-view'>Get Today's weather WORLDWIDE! </h1>
+            <h1 id='header-view'>Get today's weather worldwide</h1>
             <div className='search-section'>
+                <div id='error-sign'>
+                    {inputError ? "only english letters allowed" : null}
+                </div>
                 <Autocomplete
                     value={location}
                     onChange={(event: any, newValue: string | null) => {
@@ -130,7 +106,13 @@ const Home = () => {
                     }}
                     inputValue={inputLocation}
                     onInputChange={(event, newInputValue) => {
-                        setInputLocation(newInputValue);
+                        const letters = /[A-Za-z ]/g;
+                        if (newInputValue.match(letters) || newInputValue === '') {
+                            setInputLocation(newInputValue);
+                            setInputError(false);
+                        } else {
+                            setInputError(true);
+                        }
                     }}
                     id="controllable-states-demo"
                     options={
@@ -138,13 +120,6 @@ const Home = () => {
                             ? autoFillOptionsObject.map((result: AutofillResults) => result.location)
                             : []
                     }
-                    renderOption={(props, option) => {
-                        return (
-                            <li {...props} key={option}>
-                                {option}
-                            </li>
-                        );
-                    }}
                     sx={{ width: 300 }}
                     renderInput={(params) => <TextField {...params} label="Select City" />}
                 />
@@ -152,69 +127,52 @@ const Home = () => {
                     <TravelExploreIcon />
                 </IconButton>
             </div>
-
-            <div className='main-weather-section'>
-                <div className='current-weather-section'>
-                    <div className='weather-header'>
-                        <h1>{currentLocation.location_name}</h1>
-                        <h2>{currentLocation.currentWeather}, {currentLocation.currentTemperture}° C</h2>
+            {currentLocation && currentLocation.currentTemperture !== -999 && !loader
+                ? <div className='main-weather-section'>
+                    <div className='current-weather-section'>
+                        <div className='weather-header'>
+                            <h1>{currentLocation.location_name}</h1>
+                            <h2 id='header-temp'>
+                                {currentLocation.currentWeather},
+                                {isCelsius === true
+                                    ? ' ' + currentLocation.currentTemperture + '° C'
+                                    : ' ' + convertCelsiusToFahrenheit(currentLocation.currentTemperture) + '° F'
+                                }
+                            </h2>
+                        </div>
+                        <div className='weather-header-favorite-section'>
+                            {
+                                favoritesLocations.map((location: Location) => location.location_name).includes(currentLocation?.location_name)
+                                    ? <Button onClick={onRemoveFromFavorite} variant="text">remove from favorite <FavoriteIcon className='fav-icon' /></Button>
+                                    : <Button onClick={onAddToFavorite} variant="text">add to favorite <FavoriteBorderIcon className='fav-icon' /></Button>
+                            }
+                        </div>
                     </div>
-                    <div>
-                        {
-                            favoritesLocations.map((location: Location) => location.location_name).includes(currentLocation?.location_name)
-                                ? <Button onClick={onRemoveFromFavorite} variant="text">remove from favorite <FavoriteIcon className='fav-icon' /></Button>
-                                : <Button onClick={onAddToFavorite} variant="text">add to favorite <FavoriteBorderIcon className='fav-icon' /></Button>
-                        }
-                    </div>
-                </div>
-                <div className='five-days-weather-section'>
-                    {
-                        currentLocation.fiveDaysWeather?.DailyForecasts.map((oneDayWeather: DailyForecast, index: number) => {
-                            return (
-                                <div className='weather-one-day' key={index}>
-
-                                    <h3>{oneDayWeather.Date.toLocaleDateString()}</h3>
-
-                                    {oneDayWeather.Temperature.Minimum.UnitType === 18
-                                        ? <h3>
-                                            {convertFahrenheitToCelsius(oneDayWeather.Temperature.Minimum.Value)}° -
-                                            {convertFahrenheitToCelsius(oneDayWeather.Temperature.Maximum.Value)}° C
-                                        </h3>
-                                        : <h3> {oneDayWeather.Temperature.Minimum.Value} -
-                                            {oneDayWeather.Temperature.Maximum.Value} ° F
-                                        </h3>
-                                    }
-                                    <h3>{weekday[oneDayWeather.Date.getDay()]}</h3>
-                                </div>
-                            )
-                        })
+                    {currentLocation.fiveDaysWeather
+                        ? <div className='five-days-weather-section'>
+                            {currentLocation.fiveDaysWeather?.DailyForecasts.map((oneDayWeather: DailyForecast, index: number) => {
+                                const tempDate = new Date(oneDayWeather.Date)
+                                return (
+                                    <div className='weather-one-day' key={index}>
+                                        {isCelsius === true
+                                            ? <h3>
+                                                {convertFahrenheitToCelsius(oneDayWeather.Temperature.Minimum.Value)}° -
+                                                {convertFahrenheitToCelsius(oneDayWeather.Temperature.Maximum.Value)}° C
+                                            </h3>
+                                            : <h3> {oneDayWeather.Temperature.Minimum.Value} -
+                                                {oneDayWeather.Temperature.Maximum.Value} ° F
+                                            </h3>
+                                        }
+                                        <h3 className='weather-2-h'>{weekday[tempDate.getDay()]}</h3>
+                                        <h3 className='weather-3-h'>{tempDate.toLocaleDateString()}</h3>
+                                    </div>
+                                )
+                            })}
+                        </div>
+                        : null
                     }
                 </div>
-
-            </div>
-            {/* {currentLocation
-                ? <div>
-                    <div>
-                        <h1>{currentLocation?.location_name}</h1>
-                        {
-                            favoritesLocations.map((location: Location) => location.location_name).includes(currentLocation?.location_name)
-                                ? <h2>favorite</h2>
-                                : <h2>not favorite</h2>
-                        }
-                        <button onClick={onAddToFavorite}>add to favorite</button>
-                        <h2>{currentLocation?.currentWeather}</h2>
-                        <h2>{currentLocation?.currentTemperture}°  </h2>
-                    </div>
-                    <div>
-                        {currentLocation?.fiveDaysWeather?.DailyForecasts?.map((dayWeather: any, index: number) => {
-                            return <div key={index}>
-                                <h3>{dayWeather?.Date}</h3>
-                                <h3>Between {dayWeather?.Temperature?.Minimum?.Value}° and {dayWeather?.Temperature?.Maximum?.Value}° {dayWeather?.Temperature?.Minimum?.Unit} </h3>
-                            </div>
-                        })}
-                    </div>
-                </div>
-                : null} */}
+                : <>{loader ? <CircularProgress /> : null}</>}
         </div>
     )
 }

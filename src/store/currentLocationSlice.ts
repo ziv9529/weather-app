@@ -1,5 +1,4 @@
-import { applyMiddleware, combineReducers, configureStore, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { FiveDaysWeatherRootObject } from "../services/fiveDaysWeather";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Location } from "./favoritesSlice";
 
 interface FavoritesSliceState {

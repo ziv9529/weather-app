@@ -9,6 +9,7 @@
 }
 
 .search-section {
+    position: relative;
     display: flex;
     align-items: center;
     flex-direction: row;
@@ -20,7 +21,6 @@
     display: flex;
     justify-content: center;
     flex-direction: column;
-    /* align-items: center; */
     border: 0.5px solid #1976d2;
     border-radius: 20px;
 }
@@ -29,7 +29,7 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: space-around;
+    justify-content: space-between;
 }
 
 .current-weather-section>h1,
@@ -47,24 +47,24 @@ h2 {
     justify-content: center;
 }
 
-/* .five-days-weather-section {
-    width: 100%;
-    justify-content: space-between;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    margin-bottom: 30px;
-} */
-
 .weather-one-day {
     display: flex;
     flex-direction: column;
     align-items: center;
     width: 160px;
     height: 195px;
-    border: 1px solid black;
+    border: 1px solid #1976d2;
     margin: 20px;
     border-radius: 10px;
+}
+
+.weather-header {
+    margin-left: 10em;
+    text-align: center;
+}
+
+.weather-header-favorite-section {
+    margin-right: 10em;
 }
 
 .weather-header>h2 {
@@ -75,36 +75,46 @@ h2 {
     margin-bottom: 0;
 }
 
-/* .weather-header {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-}
-
-.weather-header>h1 {
-    margin-right: 10px;
-} */
-
 .fav-icon {
     margin-left: 5px;
 }
 
-/* @media screen and (max-width: 992px) {
-    .five-days-weather-section {
-        justify-content: space-between;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-} */
+.weather-2-h {
+    margin-bottom: 0;
+}
 
-/* @media screen and (max-width: 480px) {
+.weather-3-h {
+    margin-top: 0;
+}
+
+#error-sign {
+    position: absolute;
+    top: -23px;
+    left: 35%;
+    color: red;
+}
+
+@media screen and (max-width: 900px) {
     .weather-header {
-        align-items: center;
-        flex-direction: column;
+        margin-left: 6em;
     }
 
-    .weather-header>h1 {
-        margin-right: 10px;
+    .weather-header-favorite-section {
+        margin-right: 6em;
     }
-} */
+}
+
+@media screen and (max-width: 640px) {
+    .current-weather-section {
+        flex-direction: column;
+
+    }
+
+    .weather-header {
+        margin-left: 0;
+    }
+
+    .weather-header-favorite-section {
+        margin-right: 0;
+    }
+}

@@ -13,13 +13,31 @@ import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import WbSunnyIcon from '@mui/icons-material/WbSunny';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import "./index.css";
+import { useDispatch } from 'react-redux';
+import { updateToCelsius, updateToFahrenheit } from '../../store/isCelsiusSlice';
 
 const pages = [{ path: '', textView: 'Home' }, { path: 'favorites', textView: 'Favorites' }];
 
 const Layout = () => {
-  const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
+  const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
+  const [temperatureType, setTemperatureType] = useState<string>('celsius');
+  const dispatch = useDispatch();
 
+  const handleTemperatureTypeChange = (
+    event: React.MouseEvent<HTMLElement>,
+    newTemperatureType: string,
+  ) => {
+    setTemperatureType(newTemperatureType);
+    if (newTemperatureType === 'celsius') {
+      dispatch(updateToCelsius());
+    } else if (newTemperatureType === 'fahrenheit') {
+      dispatch(updateToFahrenheit());
+    }
+
+  };
   const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElNav(event.currentTarget);
   };
@@ -44,7 +62,7 @@ const Layout = () => {
                 display: { xs: 'none', md: 'flex' },
                 fontFamily: 'monospace',
                 fontWeight: 700,
-                letterSpacing: '.3rem',
+                letterSpacing: '.25rem',
                 color: 'inherit',
                 textDecoration: 'none',
               }}
@@ -100,7 +118,7 @@ const Layout = () => {
                 flexGrow: 1,
                 fontFamily: 'monospace',
                 fontWeight: 700,
-                letterSpacing: '.3rem',
+                letterSpacing: '.25rem',
                 color: 'inherit',
                 textDecoration: 'none',
               }}
@@ -116,7 +134,21 @@ const Layout = () => {
                 >{page.textView}</Button></Link>
               ))}
             </Box>
+            <ToggleButtonGroup
+              color="primary"
+              value={temperatureType}
+              exclusive
+              onChange={handleTemperatureTypeChange}
+              aria-label="Platform"
+              style={{
+                height: '40px',
+                border: '1px solid white'
+              }}
+            >
 
+              <ToggleButton id='first-type-style' value="celsius"><p className='temp-type-style'>C°</p></ToggleButton>
+              <ToggleButton value="fahrenheit"><p className='temp-type-style'>F°</p></ToggleButton>
+            </ToggleButtonGroup>
           </Toolbar>
         </Container>
       </AppBar>

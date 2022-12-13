@@ -6,7 +6,7 @@ import Home from './components/home';
 import Favorites from './components/favorites';
 import ErrorPage from './components/errorPage';
 
-function App() {
+function App() {  
   return (
     <BrowserRouter>
       <Routes>

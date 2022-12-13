@@ -2,6 +2,14 @@ a {
     text-decoration: none
 }
 
+.temp-type-style {
+    color: white;
+}
+
+#first-type-style:first-child {
+    border-right: 1px solid white;
+}
+
 /* #1976d2 */
 
 @media screen and (max-width: 900px) {
