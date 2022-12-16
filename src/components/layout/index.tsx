@@ -123,7 +123,9 @@ const Layout = () => {
                 textDecoration: 'none',
               }}
             >
-              Weather today
+              <div className="header_small_screen">
+                <p>Weather</p><p>today</p>
+              </div>
             </Typography>
             <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
               {pages.map((page, index) => (

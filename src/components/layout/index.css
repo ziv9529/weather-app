@@ -10,7 +10,16 @@ a {
     border-right: 1px solid white;
 }
 
-/* #1976d2 */
+.header_small_screen {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.header_small_screen>p {
+    margin: 0;
+}
 
 @media screen and (max-width: 900px) {
     a {
