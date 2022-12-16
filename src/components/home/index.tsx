@@ -63,15 +63,12 @@ const Home = () => {
 
     useEffect(() => {
         async function fetchAutofillData() {
-            setIsLoading(true);
             const data = await getAutofillOptionsService(inputLocation.toLowerCase());
             setAutoFillOptionsObject(data);
         }
         fetchAutofillData().catch((ex) => {
             dispatch(updateError(ex.message))
-        }).finally(() => {
-            setIsLoading(false);
-        });
+        })
     }, [inputLocation])
 
     async function getWeather() {
@@ -142,58 +139,58 @@ const Home = () => {
                     <TravelExploreIcon />
                 </IconButton>
             </div>
-            <div>
-                {isLoading ? <CircularProgress /> : null}
-            </div>
             {
                 isError.message === ''
                     ? <>
-                        {currentLocation && currentLocation.currentTemperture !== -999
-                            ? <div className='main-weather-section'>
-                                <div className='current-weather-section'>
-                                    <div className='weather-header'>
-                                        <h1>{currentLocation.location_name}</h1>
-                                        <h2 id='header-temp'>
-                                            {currentLocation.currentWeather},
-                                            {isCelsius === true
-                                                ? ' ' + currentLocation.currentTemperture + '° C'
-                                                : ' ' + convertCelsiusToFahrenheit(currentLocation.currentTemperture) + '° F'
-                                            }
-                                        </h2>
-                                    </div>
-                                    <div className='weather-header-favorite-section'>
-                                        {
-                                            favoritesLocations.map((location: Location) => location.location_name).includes(currentLocation?.location_name)
-                                                ? <Button onClick={onRemoveFromFavorite} variant="text">remove from favorite <FavoriteIcon className='fav-icon' /></Button>
-                                                : <Button onClick={onAddToFavorite} variant="text">add to favorite <FavoriteBorderIcon className='fav-icon' /></Button>
-                                        }
-                                    </div>
-                                </div>
-                                {currentLocation.fiveDaysWeather
-                                    ? <div className='five-days-weather-section'>
-                                        {currentLocation.fiveDaysWeather?.DailyForecasts.map((oneDayWeather: DailyForecast, index: number) => {
-                                            const tempDate = new Date(oneDayWeather.Date)
-                                            return (
-                                                <div className='weather-one-day' key={index}>
-                                                    {isCelsius === true
-                                                        ? <h3>
-                                                            {convertFahrenheitToCelsius(oneDayWeather.Temperature.Minimum.Value)}° -
-                                                            {convertFahrenheitToCelsius(oneDayWeather.Temperature.Maximum.Value)}° C
-                                                        </h3>
-                                                        : <h3> {oneDayWeather.Temperature.Minimum.Value} -
-                                                            {oneDayWeather.Temperature.Maximum.Value} ° F
-                                                        </h3>
-                                                    }
-                                                    <h3 className='weather-2-h'>{weekday[tempDate.getDay()]}</h3>
-                                                    <h3 className='weather-3-h'>{tempDate.toLocaleDateString()}</h3>
+                        {
+                            isLoading
+                                ? <CircularProgress />
+                                : <>
+                                    {currentLocation && currentLocation.currentTemperture !== -999 && currentLocation.fiveDaysWeather
+                                        ? <div className='main-weather-section'>
+                                            <div className='current-weather-section'>
+                                                <div className='weather-header'>
+                                                    <h1>{currentLocation.location_name}</h1>
+                                                    <h2 id='header-temp'>
+                                                        {currentLocation.currentWeather},
+                                                        {isCelsius === true
+                                                            ? ' ' + currentLocation.currentTemperture + '° C'
+                                                            : ' ' + convertCelsiusToFahrenheit(currentLocation.currentTemperture) + '° F'
+                                                        }
+                                                    </h2>
                                                 </div>
-                                            )
-                                        })}
-                                    </div>
-                                    : null
-                                }
-                            </div>
-                            : null
+                                                <div className='weather-header-favorite-section'>
+                                                    {
+                                                        favoritesLocations.map((location: Location) => location.location_name).includes(currentLocation?.location_name)
+                                                            ? <Button onClick={onRemoveFromFavorite} variant="text">remove from favorite <FavoriteIcon className='fav-icon' /></Button>
+                                                            : <Button onClick={onAddToFavorite} variant="text">add to favorite <FavoriteBorderIcon className='fav-icon' /></Button>
+                                                    }
+                                                </div>
+                                            </div>
+                                            <div className='five-days-weather-section'>
+                                                {currentLocation.fiveDaysWeather?.DailyForecasts.map((oneDayWeather: DailyForecast, index: number) => {
+                                                    const tempDate = new Date(oneDayWeather.Date)
+                                                    return (
+                                                        <div className='weather-one-day' key={index}>
+                                                            {isCelsius === true
+                                                                ? <h3>
+                                                                    {convertFahrenheitToCelsius(oneDayWeather.Temperature.Minimum.Value)}° -
+                                                                    {convertFahrenheitToCelsius(oneDayWeather.Temperature.Maximum.Value)}° C
+                                                                </h3>
+                                                                : <h3> {oneDayWeather.Temperature.Minimum.Value} -
+                                                                    {oneDayWeather.Temperature.Maximum.Value} ° F
+                                                                </h3>
+                                                            }
+                                                            <h3 className='weather-2-h'>{weekday[tempDate.getDay()]}</h3>
+                                                            <h3 className='weather-3-h'>{tempDate.toLocaleDateString()}</h3>
+                                                        </div>
+                                                    )
+                                                })}
+                                            </div>
+                                        </div>
+                                        : 'Error, please try again'
+                                    }
+                                </>
                         }
                     </>
                     : <>Error: {isError.message}</>
