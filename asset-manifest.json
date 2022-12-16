@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/ziv-ashkenazi-08-12-2022/static/css/main.152f4de3.css",
-    "main.js": "/ziv-ashkenazi-08-12-2022/static/js/main.1b2a4cf1.js",
+    "main.css": "/ziv-ashkenazi-08-12-2022/static/css/main.7394aeeb.css",
+    "main.js": "/ziv-ashkenazi-08-12-2022/static/js/main.b46ed02b.js",
     "index.html": "/ziv-ashkenazi-08-12-2022/index.html",
-    "main.152f4de3.css.map": "/ziv-ashkenazi-08-12-2022/static/css/main.152f4de3.css.map",
-    "main.1b2a4cf1.js.map": "/ziv-ashkenazi-08-12-2022/static/js/main.1b2a4cf1.js.map"
+    "main.7394aeeb.css.map": "/ziv-ashkenazi-08-12-2022/static/css/main.7394aeeb.css.map",
+    "main.b46ed02b.js.map": "/ziv-ashkenazi-08-12-2022/static/js/main.b46ed02b.js.map"
   },
   "entrypoints": [
-    "static/css/main.152f4de3.css",
-    "static/js/main.1b2a4cf1.js"
+    "static/css/main.7394aeeb.css",
+    "static/js/main.b46ed02b.js"
   ]
 }
