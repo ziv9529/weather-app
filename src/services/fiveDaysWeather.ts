@@ -55,7 +55,7 @@ export interface FiveDaysWeatherRootObject {
   DailyForecasts: DailyForecast[];
 }
 
-const fiveDaysWeatherUrl = 'http://dataservice.accuweather.com/forecasts/v1/daily/5day';
+const fiveDaysWeatherUrl = 'https://dataservice.accuweather.com/forecasts/v1/daily/5day';
 
 export async function getFiveDaysWeatherService(location_key: string): Promise<FiveDaysWeatherRootObject> {
   const { data } = await axios.get(`${fiveDaysWeatherUrl}/${location_key}?apikey=${API_KEY}`);

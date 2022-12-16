@@ -17,7 +17,7 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import "./index.css";
 import { useDispatch } from 'react-redux';
-import { updateToCelsius, updateToFahrenheit } from '../../store/isCelsiusSlice';
+import { updateToCelsius, updateToFahrenheit } from '../../store/slices/isCelsiusSlice';
 
 const pages = [{ path: '', textView: 'Home' }, { path: 'favorites', textView: 'Favorites' }];
 

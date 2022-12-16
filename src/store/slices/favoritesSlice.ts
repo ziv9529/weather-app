@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { FiveDaysWeatherRootObject } from "../services/fiveDaysWeather";
+import { FiveDaysWeatherRootObject } from "../../services/fiveDaysWeather";
 
 export interface Location {
     key: string;

@@ -24,7 +24,7 @@ export interface AutofillResults {
   location: string
 }
 
-const autoCompleteUrl = 'http://dataservice.accuweather.com/locations/v1/cities/autocomplete';
+const autoCompleteUrl = 'https://dataservice.accuweather.com/locations/v1/cities/autocomplete';
 
 export async function getAutofillOptionsService(location_input: string): Promise<AutofillResults[]> {
   const { data } = await axios.get(`${autoCompleteUrl}?apikey=${API_KEY}&q=${location_input}`);
